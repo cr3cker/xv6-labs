@@ -3,6 +3,7 @@
 #include "kernel/types.h"
 #include "user/user.h"
 #include "kernel/fcntl.h"
+#include "kernel/stat.h"
 
 // Parsed command representation
 #define EXEC  1
@@ -131,10 +132,20 @@ runcmd(struct cmd *cmd)
   exit(0);
 }
 
+int isatty(int fd) {
+  struct stat st;
+  if (fstat(fd, &st) < 0) {
+    printf("Error calling fstat\n");
+    exit(1);
+  }
+
+  return st.type == T_DEVICE && st.dev == 1;
+}
+
 int
 getcmd(char *buf, int nbuf)
 {
-  write(2, "$ ", 2);
+  if (isatty(0)) write(2, "$ ", 2);
   memset(buf, 0, nbuf);
   gets(buf, nbuf);
   if(buf[0] == 0) // EOF
@@ -163,6 +174,12 @@ main(void)
       buf[strlen(buf)-1] = 0;  // chop \n
       if(chdir(buf+3) < 0)
         fprintf(2, "cannot cd %s\n", buf+3);
+      continue;
+    } 
+    else if (!strcmp(buf, "wait\n")) {
+      int status, pid;
+      while((pid = wait(&status)) != -1) 
+        printf("%d done, status：%d\n", pid, status);
       continue;
     }
     if(fork1() == 0)
