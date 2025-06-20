@@ -310,6 +310,8 @@ fork(void)
 
   safestrcpy(np->name, p->name, sizeof(p->name));
 
+  np->new = p->new;
+
   pid = np->pid;
 
   release(&np->lock);

@@ -1,0 +1,6 @@
+usertrap()
+the value of p->trapframe->a7 is 7 and represents exec() syscall
+the previous mode of cpu was the user mode 
+the instruction kernel is panicking at: lw a3,0(zero), a3 is the register corresponding to num
+kernel probably crashes because there is no syscall mapped to 0. scause has 0xd in it, so it means load page fault 
+the process running is initcode and pid is 1
